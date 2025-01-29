@@ -3,6 +3,7 @@ import Header from "./Header";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import axios from "axios";
+import './AddProduct.css';
 
 function AddProduct() {
 
@@ -25,7 +26,16 @@ function AddProduct() {
         formData.append('pdesc', pdesc)
         formData.append('price', price)
         formData.append('category', category)
-        formData.append('pimage', pimage)
+        formData.append('pimage', pimage);
+
+        // Get the user ID from local storage
+        // const userId = localStorage.getItem('userId');
+        // if (userId) {
+        //     formData.append('addedBy', userId); // Add user ID to form data
+        // } else {
+        //     alert("User  ID not found. Please log in.");
+        //     return;
+        // }
 
         const url = 'http://localhost:4000/add-product';
         axios.post(url, formData)
@@ -61,6 +71,7 @@ function AddProduct() {
                     <option> Bikes </option>
                     <option> Mobile </option>
                     <option> Cloth </option>
+                    <option> Laptop </option>
                 </select>
                 <label> Product Image </label>
                 <input className="form-control" type="file"
