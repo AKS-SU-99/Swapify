@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import axios from "axios";
 import Header from "./Header";
-
+import './ProductDetails.css';
 function ProductDetail() {
 
     const [product, setproduct] = useState()
@@ -44,8 +44,9 @@ function ProductDetail() {
 
     return (<>
         <Header />
+        <div className="head" >
         PRODUCT DETAILS :
-        <div >
+        
             {product && <div className="d-flex justify-content-between flex-wrap">
                 <div class>
                     <img width="400px" height="200px" src={'http://localhost:4000/' + product.pimage} alt="" />
