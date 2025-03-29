@@ -12,7 +12,7 @@ import AddProduct from './components/AddProduct';
 import LikedProducts from './components/LikedProducts';
 import ProductDetail from './components/ProductDetail';
 import CategoryPage from './components/CategoryPage';
-import Chat from './components/Chat';
+import ChatBox from './components/ChatBox';
 
 const router = createBrowserRouter([
   {
@@ -51,6 +51,10 @@ const router = createBrowserRouter([
     path: "/liked-products",
     element: ( <LikedProducts/>),
   },
+  {
+    path: "/chat/:productId/:sellerId",  // productId = Item being negotiated
+    element: <ChatBox />,               // sellerId = Who listed the product
+  }
 
 ]);
 

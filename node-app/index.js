@@ -8,6 +8,7 @@ var jwt = require('jsonwebtoken');
 const multer = require('multer')
 const productController = require('./controllers/productControllers');
 const userController = require('./controllers/userControllers');
+const chatController = require('./controllers/chatControllers');
 
 const exchangeRequestRoutes = require('./routes/exchangeRequests');
 const ExchangeRequest = require('./models/ExchangeRequests');
@@ -28,8 +29,12 @@ const app = express()
 
 
 const server = http.createServer(app);   //
-const io = socketIo(server);             //
-
+const io = socketIo(server, {
+    cors: {
+        origin: "http://localhost:3000", // Your frontend URL
+        methods: ["GET", "POST"]
+    }
+});
 
 app.use(cookieParser())
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
@@ -37,22 +42,6 @@ app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 
-io.on('connection', (socket) => {
-    console.log('A user connected');
-    
-    // Listen for messages from the client
-    socket.on('send-message', (message) => {
-        console.log('Message received:', message);
-
-        // Emit the message to all connected clients (you can change this to specific users if needed)
-        io.emit('receive-message', message);
-    });
-
-    // Handle disconnect
-    socket.on('disconnect', () => {
-        console.log('A user disconnected');
-    });
-});
 
 const port = 4000
 require('dotenv').config();
@@ -64,8 +53,36 @@ mongoose.connect(process.env.DB_URI, { dbName: "Swapifydb"})
     console.log('Error connecting to MongoDB:', error);
 });
 
+// ================= SOCKET.IO LOGIC =================
+io.on('connection', (socket) => {
+    console.log('New user connected:', socket.userid);
 
+    // Join product-specific room
+    socket.on('join-product-chat', (productId) => {
+        socket.join(`product_${productId}`);
+    });
 
+    // Handle chat messages
+    socket.on('send-message', async (data) => {
+        try {
+          // Save to MongoDB
+          const newMessage = new Chat({
+            sender: data.senderId,
+            receiver: data.receiverId,
+            product: data.productId,
+            message: data.message
+          });
+          await newMessage.save();
+    
+          // Broadcast to both users
+          io.to(`product_${data.productId}`).emit('new-message', newMessage);
+        } catch (err) {
+          console.error('Message save error:', err);
+        }
+      });
+    });
+
+    
 app.use('/api/exchange-request', exchangeRequestRoutes);
 app.get('/', (req, res) => {
     res.send('hello...')
@@ -81,6 +98,9 @@ app.post('/signup', userController.signup)
 app.get('/my-profile/:userId', userController.myProfileById)
 app.get('/get-user/:uId', userController.getUserById)
 app.post('/login', userController.login)
+// Chat routes
+app.post('/api/chat/send', chatController.sendMessage);
+app.get('/api/chat/:productId', chatController.getProductChats);
 
 app.listen(port, () => {
     console.log(`Example app listening on port ${port}`)
