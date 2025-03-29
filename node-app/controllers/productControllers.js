@@ -11,6 +11,7 @@ let schema = new mongoose.Schema({
     pimage2: String,
     category1: String,
     addedBy: String,
+    chats: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Chat' }]
     // pLoc: {
     //     type: {
     //         type: String,
